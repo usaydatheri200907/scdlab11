@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_HUB_USERNAME = 'your_dockerhub_username'
+        DOCKER_HUB_REPO = 'your_dockerhub_repo'
+        DOCKER_HUB_PASSWORD = credentials('docker-hub-credentials')
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -23,6 +29,13 @@ pipeline {
         stage('Run Docker Image') {
             steps {
                 sh "docker run -d -p 80:80 \${DOCKER_HUB_REPO}:latest"
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                sh "echo \${DOCKER_HUB_PASSWORD} | docker login -u \${DOCKER_HUB_USERNAME} --password-stdin"
+                sh "docker push \${DOCKER_HUB_REPO}:latest"
             }
         }
     }
